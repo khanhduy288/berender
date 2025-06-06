@@ -1,7 +1,13 @@
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
+const cors = require('cors');  // thêm cors
 const app = express();
 const port = 3000;
+
+// CORS config - cho phép frontend localhost (hoặc bạn đổi thành domain frontend của bạn)
+app.use(cors({
+  origin: 'http://127.0.0.1:3000'  // hoặc '*' nếu bạn muốn mở rộng
+}));
 
 app.use(express.json());
 
@@ -61,12 +67,12 @@ app.post('/users', (req, res) => {
   });
 });
 
-// Lấy tất cả users
+// Lấy tất cả users (chỉ lấy các trường không nhạy cảm)
 app.get('/users', (req, res) => {
   const sql = `
     SELECT
       id, status, fullName,
-       level, balance, walletAddress
+      level, balance, walletAddress
     FROM users
   `;
 
@@ -76,14 +82,13 @@ app.get('/users', (req, res) => {
   });
 });
 
-
-// ✅ Lấy thông tin user theo ID (dùng cho frontend)
+// Lấy thông tin user theo ID (không trả userName, passWord)
 app.get('/users/:id', (req, res) => {
   const id = req.params.id;
   const sql = `
     SELECT
-      id, status, fullName
-      , level, balance, walletAddress
+      id, status, fullName,
+      level, balance, walletAddress
     FROM users
     WHERE id = ?
   `;
@@ -94,7 +99,6 @@ app.get('/users/:id', (req, res) => {
     res.json(row);
   });
 });
-
 
 // Cập nhật user theo id
 app.put('/users/:id', (req, res) => {
