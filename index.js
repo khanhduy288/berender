@@ -65,17 +65,8 @@ app.post('/users', (req, res) => {
 app.get('/users', (req, res) => {
   const sql = `
     SELECT
-      id,
-      email,
-      userName,
-      passWord,
-      status,
-      fullName,
-      phoneNumber,
-      dob,
-      level,
-      balance,
-      walletAddress
+      id, status, fullName,
+       level, balance, walletAddress
     FROM users
   `;
 
@@ -85,7 +76,27 @@ app.get('/users', (req, res) => {
   });
 });
 
-// Cập nhật user theo id (PUT /users/:id)
+
+// ✅ Lấy thông tin user theo ID (dùng cho frontend)
+app.get('/users/:id', (req, res) => {
+  const id = req.params.id;
+  const sql = `
+    SELECT
+      id, status, fullName
+      , level, balance, walletAddress
+    FROM users
+    WHERE id = ?
+  `;
+
+  db.get(sql, [id], (err, row) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (!row) return res.status(404).json({ error: 'User not found' });
+    res.json(row);
+  });
+});
+
+
+// Cập nhật user theo id
 app.put('/users/:id', (req, res) => {
   const id = req.params.id;
   const {
@@ -120,7 +131,7 @@ app.put('/users/:id', (req, res) => {
   });
 });
 
-// Xóa user theo id (DELETE /users/:id)
+// Xóa user theo id
 app.delete('/users/:id', (req, res) => {
   const id = req.params.id;
   const sql = `DELETE FROM users WHERE id = ?`;
@@ -132,7 +143,7 @@ app.delete('/users/:id', (req, res) => {
   });
 });
 
-// Khởi động server
+// Start server
 app.listen(port, () => {
   console.log(`🚀 Server is running at http://localhost:${port}`);
 });
