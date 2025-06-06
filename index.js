@@ -5,6 +5,15 @@ const port = 3000;
 
 app.use(express.json());
 
+// Middleware kiểm tra secret key
+app.use((req, res, next) => {
+  const key = req.headers['x-secret-key'];
+  if (key !== 'adminsepuser') {
+    return res.status(403).json({ error: 'Forbidden, invalid secret key' });
+  }
+  next();
+});
+
 // Kết nối SQLite
 const db = new sqlite3.Database('./data.db', (err) => {
   if (err) return console.error(err.message);
@@ -28,8 +37,7 @@ db.run(`
   )
 `);
 
-
-// Thêm user mới
+// Thêm user mới (hoặc update nếu id trùng)
 app.post('/users', (req, res) => {
   const {
     id, email, userName, passWord, status,
@@ -72,13 +80,57 @@ app.get('/users', (req, res) => {
   `;
 
   db.all(sql, [], (err, rows) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
+    if (err) return res.status(500).json({ error: err.message });
     res.json(rows);
   });
 });
 
+// Cập nhật user theo id (PUT /users/:id)
+app.put('/users/:id', (req, res) => {
+  const id = req.params.id;
+  const {
+    email, userName, passWord, status,
+    fullName, phoneNumber, dob, level,
+    balance, walletAddress
+  } = req.body;
+
+  const sql = `
+    UPDATE users SET
+      email = ?,
+      userName = ?,
+      passWord = ?,
+      status = ?,
+      fullName = ?,
+      phoneNumber = ?,
+      dob = ?,
+      level = ?,
+      balance = ?,
+      walletAddress = ?
+    WHERE id = ?
+  `;
+
+  db.run(sql, [
+    email, userName, passWord, status,
+    fullName, phoneNumber, dob, level,
+    balance, walletAddress, id
+  ], function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    if (this.changes === 0) return res.status(404).json({ error: 'User not found' });
+    res.json({ message: 'User updated', id });
+  });
+});
+
+// Xóa user theo id (DELETE /users/:id)
+app.delete('/users/:id', (req, res) => {
+  const id = req.params.id;
+  const sql = `DELETE FROM users WHERE id = ?`;
+
+  db.run(sql, [id], function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    if (this.changes === 0) return res.status(404).json({ error: 'User not found' });
+    res.json({ message: 'User deleted', id });
+  });
+});
 
 // Khởi động server
 app.listen(port, () => {
