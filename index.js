@@ -3,6 +3,7 @@ const sqlite3 = require('sqlite3').verbose();
 const cors = require('cors');  // thêm cors
 const app = express();
 const port = 3000;
+const crypto = require('crypto'); // Nếu bạn muốn mã hóa mật khẩu (tùy chọn)
 
 // CORS config - cho phép frontend localhost (hoặc bạn đổi thành domain frontend của bạn)
 app.use(cors({
@@ -150,4 +151,46 @@ app.delete('/users/:id', (req, res) => {
 // Start server
 app.listen(port, () => {
   console.log(`🚀 Server is running at http://localhost:${port}`);
+});
+
+
+// API login - POST /login
+app.post('/login', (req, res) => {
+  const { username, password } = req.body;
+
+  if (!username || !password) {
+    return res.status(400).json({ error: 'Username and password are required.' });
+  }
+
+  // Query user theo username/email (đơn giản, bạn có thể tùy chỉnh thêm)
+  const sql = `
+    SELECT * FROM users
+    WHERE userName = ? OR email = ?
+    LIMIT 1
+  `;
+
+  db.get(sql, [username, username], (err, user) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: 'Internal server error.' });
+    }
+
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid username or password.' });
+    }
+
+    // So sánh mật khẩu (nếu bạn mã hóa thì phải giải mã hoặc băm lại để so sánh)
+    if (user.passWord !== password) {
+      return res.status(401).json({ error: 'Invalid username or password.' });
+    }
+
+    // Nếu đúng, trả về user info (bỏ passWord) hoặc token nếu có
+    const { passWord, ...userInfo } = user;
+
+    res.json({
+      message: 'Login successful',
+      user: userInfo
+      // token: '...' // nếu bạn muốn thêm JWT hoặc token ở đây
+    });
+  });
 });
