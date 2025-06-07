@@ -110,58 +110,6 @@ app.get('/users', (req, res) => {
   });
 });
 
-// Lấy thông tin 1 user theo ID
-app.get('/users/:id', (req, res) => {
-  const userId = req.params.id;
-
-  db.get(`SELECT id, status, fullName, level, balance, walletAddress FROM users WHERE id = ?`, [userId], (err, row) => {
-    if (err) return res.status(500).json({ error: err.message });
-    if (!row) return res.status(404).json({ message: 'User not found' });
-    res.json(row);
-  });
-});
-
-// Cập nhật user theo ID (PUT)
-app.put('/users/:id', async (req, res) => {
-  const userId = req.params.id;
-  const {
-    email, userName, passWord, status,
-    fullName, phoneNumber, dob, level,
-    balance, walletAddress
-  } = req.body;
-
-  const hashedPassword = passWord ? await bcrypt.hash(passWord, 10) : null;
-
-  db.run(`
-    UPDATE users SET
-      email = ?, userName = ?, ${hashedPassword ? 'passWord = ?,' : ''}
-      status = ?, fullName = ?, phoneNumber = ?, dob = ?, level = ?, balance = ?, walletAddress = ?
-    WHERE id = ?
-  `,
-  hashedPassword
-    ? [email, userName, hashedPassword, status, fullName, phoneNumber, dob, level, balance, walletAddress, userId]
-    : [email, userName, status, fullName, phoneNumber, dob, level, balance, walletAddress, userId],
-  function(err) {
-    if (err) return res.status(500).json({ error: err.message });
-    if (this.changes === 0) return res.status(404).json({ message: 'User not found' });
-    res.json({ message: 'User updated' });
-  });
-});
-
-// Xoá user theo ID
-app.delete('/users/:id', (req, res) => {
-  const userId = req.params.id;
-
-  db.run(`DELETE FROM users WHERE id = ?`, [userId], function(err) {
-    if (err) return res.status(500).json({ error: err.message });
-    if (this.changes === 0) return res.status(404).json({ message: 'User not found' });
-    res.json({ message: 'User deleted' });
-  });
-});
-
-
-
-
 // Start
 app.listen(port, () => {
   console.log(`🚀 Server running at http://localhost:${port}`);
