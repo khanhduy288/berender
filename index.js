@@ -7,9 +7,22 @@ const app = express();
 const port = 3000;
 const SECRET_KEY = 'supersecretkey'; // Đổi key này và giữ bí mật
 
+const allowedOrigins = [
+  'http://127.0.0.1:3000',
+  'https://antique-chi.vercel.app'
+];
+
 app.use(cors({
-  origin: 'http://127.0.0.1:3000'
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true // nếu bạn cần gửi cookie/token
 }));
+
 app.use(express.json());
 
 // SQLite
