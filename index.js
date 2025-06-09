@@ -140,7 +140,7 @@ app.put('/users/:id', async (req, res) => {
   const {
     email, userName, passWord, status,
     fullName, phoneNumber, dob, level,
-    balance, walletAddress
+    balance, walletAddress, exp  // thêm exp ở đây
   } = req.body;
 
   const hashedPassword = passWord ? await bcrypt.hash(passWord, 10) : null;
@@ -148,18 +148,19 @@ app.put('/users/:id', async (req, res) => {
   db.run(`
     UPDATE users SET
       email = ?, userName = ?, ${hashedPassword ? 'passWord = ?,' : ''}
-      status = ?, fullName = ?, phoneNumber = ?, dob = ?, level = ?, balance = ?, walletAddress = ?
+      status = ?, fullName = ?, phoneNumber = ?, dob = ?, level = ?, balance = ?, walletAddress = ?, exp = ?
     WHERE id = ?
   `,
   hashedPassword
-    ? [email, userName, hashedPassword, status, fullName, phoneNumber, dob, level, balance, walletAddress, userId]
-    : [email, userName, status, fullName, phoneNumber, dob, level, balance, walletAddress, userId],
+    ? [email, userName, hashedPassword, status, fullName, phoneNumber, dob, level, balance, walletAddress, exp, userId]
+    : [email, userName, status, fullName, phoneNumber, dob, level, balance, walletAddress, exp, userId],
   function(err) {
     if (err) return res.status(500).json({ error: err.message });
     if (this.changes === 0) return res.status(404).json({ message: 'User not found' });
     res.json({ message: 'User updated' });
   });
 });
+
 
 // Xoá user theo ID
 app.delete('/users/:id', (req, res) => {
