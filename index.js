@@ -116,7 +116,7 @@ app.get('/me', verifyToken, (req, res) => {
 // Route công khai: lấy danh sách user không nhạy cảm
 app.get('/users', (req, res) => {
   db.all(`
-    SELECT id, status, fullName, level, balance, walletAddress FROM users
+    SELECT id, status, fullName, level, balance, exp , walletAddress FROM users
   `, [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(rows);
@@ -127,7 +127,7 @@ app.get('/users', (req, res) => {
 app.get('/users/:id', (req, res) => {
   const userId = req.params.id;
 
-  db.get(`SELECT id, status, fullName, level, balance, walletAddress FROM users WHERE id = ?`, [userId], (err, row) => {
+  db.get(`SELECT id, status, fullName, level, balance, exp, walletAddress FROM users WHERE id = ?`, [userId], (err, row) => {
     if (err) return res.status(500).json({ error: err.message });
     if (!row) return res.status(404).json({ message: 'User not found' });
     res.json(row);
