@@ -79,10 +79,11 @@ app.post('/login', (req, res) => {
     const isMatch = await bcrypt.compare(password, user.passWord);
     if (!isMatch) return res.status(401).json({ message: 'Wrong password' });
 
-    const { passWord, ...safeUser } = user;
+const { passWord, ...userData } = user;
+if ('exp' in userData) delete userData.exp;
 
-    // Tạo JWT token
-    const token = jwt.sign(safeUser, SECRET_KEY, { expiresIn: '7d' });
+const token = jwt.sign(userData, SECRET_KEY, { expiresIn: '7d' });
+
 
     res.json({ user: safeUser, token });
   });
