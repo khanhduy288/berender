@@ -11,15 +11,19 @@ const allowedOrigins = [
   'https://antique-chi.vercel.app'
 ];
 
+// app.use(cors({
+//   origin: function (origin, callback) {
+//     if (!origin || allowedOrigins.includes(origin)) {
+//       callback(null, true);
+//     } else {
+//       callback(new Error('Not allowed by CORS'));
+//     }
+//   },
+//   credentials: true // nếu bạn cần gửi cookie/token
+// }));
+
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true // nếu bạn cần gửi cookie/token
+  origin: '*'
 }));
 
 app.use(express.json());
@@ -68,7 +72,6 @@ function verifyApiKey(req, res, next) {
   next();
 }
 
-// Đăng nhập
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
   const sql = `SELECT * FROM users WHERE userName = ? OR email = ?`;
