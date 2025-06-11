@@ -5,8 +5,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const app = express();
 const port = 3000;
-const SECRET_KEY = 'supersecretkey'; // Đổi key này và giữ bí mật
-
+const SECRET_KEY = 'adminsepuser'; 
 const allowedOrigins = [
   'http://127.0.0.1:3000',
   'https://antique-chi.vercel.app'
