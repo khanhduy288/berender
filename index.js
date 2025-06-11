@@ -121,7 +121,7 @@ app.get('/me', verifyToken, (req, res) => {
 });
 
 // Route công khai: lấy danh sách user không nhạy cảm
-app.get('/users',verifyApiKey, (req, res) => {
+app.get('/users', (req, res) => {
   db.all(`
     SELECT id, status, fullName, level, balance, exp , walletAddress FROM users
   `, [], (err, rows) => {
@@ -131,7 +131,7 @@ app.get('/users',verifyApiKey, (req, res) => {
 });
 
 // Lấy thông tin 1 user theo ID
-app.get('/users/:id',verifyApiKey, (req, res) => {
+app.get('/users/:id', (req, res) => {
   const userId = req.params.id;
 
   db.get(`SELECT id, status, fullName, level, balance, exp, walletAddress FROM users WHERE id = ?`, [userId], (err, row) => {
@@ -142,7 +142,7 @@ app.get('/users/:id',verifyApiKey, (req, res) => {
 });
 
 // Cập nhật user theo ID (PUT)
-app.put('/users/:id',verifyApiKey, async (req, res) => {
+app.put('/users/:id', async (req, res) => {
   const userId = req.params.id;
   const {
     email, userName, passWord, status,
