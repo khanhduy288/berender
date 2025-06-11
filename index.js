@@ -11,19 +11,15 @@ const allowedOrigins = [
   'https://antique-chi.vercel.app'
 ];
 
-// app.use(cors({
-//   origin: function (origin, callback) {
-//     if (!origin || allowedOrigins.includes(origin)) {
-//       callback(null, true);
-//     } else {
-//       callback(new Error('Not allowed by CORS'));
-//     }
-//   },
-//   credentials: true // nếu bạn cần gửi cookie/token
-// }));
-
 app.use(cors({
-  origin: '*'
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true // nếu bạn cần gửi cookie/token
 }));
 
 app.use(express.json());
@@ -93,7 +89,7 @@ app.post('/login', (req, res) => {
 });
 
 // Đăng ký / update user
-app.post('/users',verifyApiKey, async (req, res) => {
+app.post('/users', async (req, res) => {
   const {
     id, email, userName, passWord, status,
     fullName, phoneNumber, dob, level,
