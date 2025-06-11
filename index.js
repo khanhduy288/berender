@@ -61,8 +61,16 @@ function verifyToken(req, res, next) {
   });
 }
 
+function verifyApiKey(req, res, next) {
+  const apiKey = req.headers['x-api-key'];
+  if (apiKey !== SECRET_KEY) {
+    return res.status(403).json({ error: 'Invalid API Key' });
+  }
+  next();
+}
+
 // Đăng nhập
-app.post('/login', (req, res) => {
+app.post('/login',verifyApiKey, (req, res) => {
   const { username, password } = req.body;
   const sql = `SELECT * FROM users WHERE userName = ? OR email = ?`;
 
@@ -83,7 +91,7 @@ app.post('/login', (req, res) => {
 });
 
 // Đăng ký / update user
-app.post('/users', async (req, res) => {
+app.post('/users',verifyApiKey, async (req, res) => {
   const {
     id, email, userName, passWord, status,
     fullName, phoneNumber, dob, level,
@@ -114,7 +122,7 @@ app.get('/me', verifyToken, (req, res) => {
 });
 
 // Route công khai: lấy danh sách user không nhạy cảm
-app.get('/users', (req, res) => {
+app.get('/users',verifyApiKey, (req, res) => {
   db.all(`
     SELECT id, status, fullName, level, balance, exp , walletAddress FROM users
   `, [], (err, rows) => {
@@ -124,7 +132,7 @@ app.get('/users', (req, res) => {
 });
 
 // Lấy thông tin 1 user theo ID
-app.get('/users/:id', (req, res) => {
+app.get('/users/:id',verifyApiKey, (req, res) => {
   const userId = req.params.id;
 
   db.get(`SELECT id, status, fullName, level, balance, exp, walletAddress FROM users WHERE id = ?`, [userId], (err, row) => {
@@ -135,7 +143,7 @@ app.get('/users/:id', (req, res) => {
 });
 
 // Cập nhật user theo ID (PUT)
-app.put('/users/:id', async (req, res) => {
+app.put('/users/:id',verifyApiKey, async (req, res) => {
   const userId = req.params.id;
   const {
     email, userName, passWord, status,
@@ -163,7 +171,7 @@ app.put('/users/:id', async (req, res) => {
 
 
 // Xoá user theo ID
-app.delete('/users/:id', (req, res) => {
+app.delete('/users/:id',verifyApiKey, (req, res) => {
   const userId = req.params.id;
 
   db.run(`DELETE FROM users WHERE id = ?`, [userId], function(err) {
@@ -175,7 +183,9 @@ app.delete('/users/:id', (req, res) => {
 
 
 
-
+app.get('/ping', (req, res) => {
+  res.sendStatus(200);
+});
 // Start
 app.listen(port, () => {
   console.log(`🚀 Server running at http://localhost:${port}`);
