@@ -85,7 +85,7 @@ if ('exp' in userData) delete userData.exp;
 const token = jwt.sign(userData, SECRET_KEY, { expiresIn: '7d' });
 
 
-    res.json({ user: safeUser, token });
+res.json({ user: userData, token });
   });
 });
 
