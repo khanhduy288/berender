@@ -19,9 +19,13 @@ app.use(cors({
       callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true // nếu bạn cần gửi cookie/token
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
+// Cho phép preflight request
+app.options('*', cors());
 app.use(express.json());
 
 // SQLite
