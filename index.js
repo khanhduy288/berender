@@ -180,6 +180,29 @@ app.delete('/users/:id',verifyApiKey, (req, res) => {
   });
 });
 
+// Cập nhật một phần user (PATCH) - ví dụ chỉ cập nhật balance
+app.patch('/users/:id', verifyApiKey, (req, res) => {
+  const userId = req.params.id;
+  const updates = req.body;
+
+  const allowedFields = ['email', 'userName', 'status', 'fullName', 'phoneNumber', 'dob', 'level', 'balance', 'walletAddress', 'exp'];
+  const fieldsToUpdate = Object.keys(updates).filter(field => allowedFields.includes(field));
+
+  if (fieldsToUpdate.length === 0) {
+    return res.status(400).json({ error: 'No valid fields to update' });
+  }
+
+  const setClause = fieldsToUpdate.map(field => `${field} = ?`).join(', ');
+  const values = fieldsToUpdate.map(field => updates[field]);
+
+  const sql = `UPDATE users SET ${setClause} WHERE id = ?`;
+
+  db.run(sql, [...values, userId], function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    if (this.changes === 0) return res.status(404).json({ message: 'User not found' });
+    res.json({ message: 'User partially updated' });
+  });
+});
 
 
 app.get('/ping', (req, res) => {
