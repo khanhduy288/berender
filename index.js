@@ -19,13 +19,9 @@ app.use(cors({
       callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  credentials: true // nếu bạn cần gửi cookie/token
 }));
 
-// Cho phép preflight request
-app.options('*', cors());
 app.use(express.json());
 
 // SQLite
@@ -125,7 +121,7 @@ app.get('/me', verifyToken, (req, res) => {
 });
 
 // Route công khai: lấy danh sách user không nhạy cảm
-app.get('/users', (req, res) => {
+app.get('/users',verifyApiKey, (req, res) => {
   db.all(`
     SELECT id, status, fullName, level, balance, exp , walletAddress FROM users
   `, [], (err, rows) => {
@@ -135,7 +131,7 @@ app.get('/users', (req, res) => {
 });
 
 // Lấy thông tin 1 user theo ID
-app.get('/users/:id', (req, res) => {
+app.get('/users/:id',verifyApiKey, (req, res) => {
   const userId = req.params.id;
 
   db.get(`SELECT id, status, fullName, level, balance, exp, walletAddress FROM users WHERE id = ?`, [userId], (err, row) => {
@@ -146,7 +142,7 @@ app.get('/users/:id', (req, res) => {
 });
 
 // Cập nhật user theo ID (PUT)
-app.put('/users/:id', async (req, res) => {
+app.put('/users/:id',verifyApiKey, async (req, res) => {
   const userId = req.params.id;
   const {
     email, userName, passWord, status,
@@ -174,7 +170,7 @@ app.put('/users/:id', async (req, res) => {
 
 
 // Xoá user theo ID
-app.delete('/users/:id', (req, res) => {
+app.delete('/users/:id',verifyApiKey, (req, res) => {
   const userId = req.params.id;
 
   db.run(`DELETE FROM users WHERE id = ?`, [userId], function(err) {
