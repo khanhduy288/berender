@@ -170,7 +170,7 @@ app.put('/users/:id', async (req, res) => {
 
 
 // Xoá user theo ID
-app.delete('/users/:id',verifyApiKey, (req, res) => {
+app.delete('/users/:id', (req, res) => {
   const userId = req.params.id;
 
   db.run(`DELETE FROM users WHERE id = ?`, [userId], function(err) {
