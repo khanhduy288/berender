@@ -117,7 +117,15 @@ app.post('/users', async (req, res) => {
 
 // Route cần đăng nhập mới được xem
 app.get('/me', verifyToken, (req, res) => {
-  res.json({ user: req.user });
+  const userId = req.user.id;
+
+  db.get(`SELECT * FROM users WHERE id = ?`, [userId], (err, row) => {
+    if (err) return res.status(500).json({ error: 'DB error' });
+    if (!row) return res.status(404).json({ message: 'User not found' });
+
+    const { passWord, ...userWithoutPassword } = row;
+    res.json({ user: userWithoutPassword });
+  });
 });
 
 // Route công khai: lấy danh sách user không nhạy cảm
