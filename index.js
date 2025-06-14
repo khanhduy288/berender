@@ -15,14 +15,17 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function (origin, callback) {
+    console.log('🌐 Incoming request from origin:', origin); // log origin
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.warn('🚫 BLOCKED by CORS:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true 
+  credentials: true
 }));
+
 
 app.use(express.json());
 
