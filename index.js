@@ -389,7 +389,7 @@ app.delete('/matches/:id', verifyApiKey, (req, res) => {
 
 
 // Lấy tất cả đơn
-app.get('/orders', apiKeyMiddleware, (req, res) => {
+app.get('/orders', verifyApiKey, (req, res) => {
   const { matchId, userWallet } = req.query;
   let sql = 'SELECT * FROM orders';
   const params = [];
