@@ -8,7 +8,8 @@ const port = 3000;
 const SECRET_KEY = 'adminsepuser'; 
 const allowedOrigins = [
   'http://127.0.0.1:3000',
-  'https://antique-chi.vercel.app'
+  'https://antique-chi.vercel.app',
+  'https://boatfun.io/'
 ];
 
 app.use(cors({
