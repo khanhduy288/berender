@@ -193,6 +193,27 @@ app.get('/users/:id',verifyApiKey, (req, res) => {
   });
 });
 
+app.patch('/users/:id/status', verifyApiKey, (req, res) => {
+  const userId = req.params.id;
+  const { status } = req.body;
+  db.run(`UPDATE users SET status = ? WHERE id = ?`, [status, userId], function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ message: 'Status updated' });
+  });
+});
+
+app.get('/users/by-wallet/:walletAddress', verifyApiKey, (req, res) => {
+  const wallet = req.params.walletAddress;
+  db.get(`SELECT * FROM users WHERE walletAddress = ?`, [wallet], (err, user) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    const { passWord, ...userData } = user;
+    res.json(userData);
+  });
+});
+
+
+
 app.put('/users/:id',verifyApiKey, async (req, res) => {
   const userId = req.params.id;
   const {
@@ -369,13 +390,19 @@ app.delete('/matches/:id', verifyApiKey, (req, res) => {
 
 // Lấy tất cả đơn
 app.get('/orders', apiKeyMiddleware, (req, res) => {
-  const { matchId } = req.query;
+  const { matchId, userWallet } = req.query;
   let sql = 'SELECT * FROM orders';
   const params = [];
 
-  if (matchId) {
+  if (matchId && userWallet) {
+    sql += ' WHERE matchId = ? AND userWallet = ?';
+    params.push(matchId, userWallet);
+  } else if (matchId) {
     sql += ' WHERE matchId = ?';
     params.push(matchId);
+  } else if (userWallet) {
+    sql += ' WHERE userWallet = ?';
+    params.push(userWallet);
   }
 
   db.all(sql, params, (err, rows) => {
@@ -383,6 +410,7 @@ app.get('/orders', apiKeyMiddleware, (req, res) => {
     res.json(rows);
   });
 });
+
 
 
 // Lấy đơn theo ID
