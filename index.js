@@ -368,12 +368,22 @@ app.delete('/matches/:id', verifyApiKey, (req, res) => {
 
 
 // Lấy tất cả đơn
-app.get('/orders', (req, res) => {
-  db.all(`SELECT * FROM orders`, (err, rows) => {
+app.get('/orders', apiKeyMiddleware, (req, res) => {
+  const { matchId } = req.query;
+  let sql = 'SELECT * FROM orders';
+  const params = [];
+
+  if (matchId) {
+    sql += ' WHERE matchId = ?';
+    params.push(matchId);
+  }
+
+  db.all(sql, params, (err, rows) => {
     if (err) return res.status(500).json({ message: 'DB error' });
     res.json(rows);
   });
 });
+
 
 // Lấy đơn theo ID
 app.get('/orders/:id', (req, res) => {
