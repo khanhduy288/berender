@@ -19,7 +19,7 @@ app.use(cors({
       callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true // nếu bạn cần gửi cookie/token
+  credentials: true 
 }));
 
 app.use(express.json());
@@ -46,10 +46,9 @@ db.run(`
   )
 `);
 
-// Middleware xác thực token
 function verifyToken(req, res, next) {
   const authHeader = req.headers['authorization'];
-  const token = authHeader?.split(' ')[1]; // "Bearer <token>"
+  const token = authHeader?.split(' ')[1]; 
 
   if (!token) return res.status(401).json({ error: 'Token missing' });
 
@@ -89,7 +88,6 @@ res.json({ user: userData, token });
   });
 });
 
-// Đăng ký / update user
 app.post('/users', async (req, res) => {
   const {
     id, email, userName, passWord, status,
@@ -115,7 +113,6 @@ app.post('/users', async (req, res) => {
   });
 });
 
-// Route cần đăng nhập mới được xem
 app.get('/me', verifyToken, (req, res) => {
   const userId = req.user.id;
 
@@ -128,7 +125,6 @@ app.get('/me', verifyToken, (req, res) => {
   });
 });
 
-// Route công khai: lấy danh sách user không nhạy cảm
 app.get('/users',verifyApiKey, (req, res) => {
   db.all(`
     SELECT id, status, fullName, level, balance, exp , walletAddress FROM users
@@ -138,7 +134,6 @@ app.get('/users',verifyApiKey, (req, res) => {
   });
 });
 
-// Lấy thông tin 1 user theo ID
 app.get('/users/:id',verifyApiKey, (req, res) => {
   const userId = req.params.id;
 
@@ -149,13 +144,12 @@ app.get('/users/:id',verifyApiKey, (req, res) => {
   });
 });
 
-// Cập nhật user theo ID (PUT)
 app.put('/users/:id',verifyApiKey, async (req, res) => {
   const userId = req.params.id;
   const {
     email, userName, passWord, status,
     fullName, phoneNumber, dob, level,
-    balance, walletAddress, exp  // thêm exp ở đây
+    balance, walletAddress, exp  
   } = req.body;
 
   const hashedPassword = passWord ? await bcrypt.hash(passWord, 10) : null;
@@ -177,7 +171,6 @@ app.put('/users/:id',verifyApiKey, async (req, res) => {
 });
 
 
-// Xoá user theo ID
 app.delete('/users/:id',verifyApiKey, (req, res) => {
   const userId = req.params.id;
 
@@ -188,7 +181,6 @@ app.delete('/users/:id',verifyApiKey, (req, res) => {
   });
 });
 
-// Cập nhật một phần user (PATCH) - ví dụ chỉ cập nhật balance
 app.patch('/users/:id', verifyApiKey, (req, res) => {
   const userId = req.params.id;
   const updates = req.body;
@@ -216,7 +208,7 @@ app.patch('/users/:id', verifyApiKey, (req, res) => {
 app.get('/ping', (req, res) => {
   res.sendStatus(200);
 });
-// Start
+
 app.listen(port, () => {
   console.log(`🚀 Server running at http://localhost:${port}`);
 });
