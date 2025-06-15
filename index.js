@@ -75,26 +75,30 @@ db.run(`
   )
 `);
 
-db.run(`
-  CREATE TABLE IF NOT EXISTS orders (
-    id TEXT PRIMARY KEY,
-    matchId TEXT,
-    matchName TEXT,
-    team TEXT,
-    amount REAL,
-    userWallet TEXT,
-    token TEXT,
-    timestamp TEXT,
-    status TEXT,
-    txHash TEXT,
-    claim REAL,
-    refund REAL,
-    option TEXT,
-    processStart TEXT,
-    countdownEnd INTEGER,
-    hasAutoBet BOOLEAN
-  )
-`);
+db.run(`DROP TABLE IF EXISTS orders`, () => {
+  db.run(`
+    CREATE TABLE orders (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      matchId TEXT,
+      matchName TEXT,
+      team TEXT,
+      amount REAL,
+      userWallet TEXT,
+      token TEXT,
+      timestamp TEXT,
+      status TEXT,
+      txHash TEXT,
+      claim REAL,
+      refund REAL,
+      option TEXT,
+      processStart TEXT,
+      countdownEnd INTEGER,
+      hasAutoBet BOOLEAN
+    )
+  `);
+});
+
+
 
 
 
@@ -428,26 +432,36 @@ app.get('/orders/:id', (req, res) => {
 // Tạo đơn mới
 app.post('/orders', (req, res) => {
   const {
-    id, matchId, matchName, team, amount, userWallet,
+    matchId, matchName, team, amount, userWallet,
     token, timestamp, status, txHash, claim, refund,
     option, processStart, countdownEnd, hasAutoBet
   } = req.body;
 
-  db.run(`
+  const sql = `
     INSERT INTO orders (
-      id, matchId, matchName, team, amount, userWallet, token, timestamp,
+      matchId, matchName, team, amount, userWallet, token, timestamp,
       status, txHash, claim, refund, option, processStart, countdownEnd, hasAutoBet
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `,
-  [
-    id, matchId, matchName, team, amount, userWallet, token, timestamp,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+
+  const values = [
+    matchId, matchName, team, amount, userWallet, token, timestamp,
     status, txHash, claim, refund, option, processStart, countdownEnd, hasAutoBet ? 1 : 0
-  ],
-  function (err) {
+  ];
+
+  db.run(sql, values, function (err) {
     if (err) return res.status(500).json({ message: 'DB insert error', error: err });
-    res.json({ message: 'Order created', id });
+
+    // ✅ Trả ID mới tạo
+    res.status(201).json({
+      id: this.lastID,
+      matchId, matchName, team, amount, userWallet,
+      token, timestamp, status, txHash, claim, refund,
+      option, processStart, countdownEnd, hasAutoBet
+    });
   });
 });
+
 
 // Cập nhật đơn
 app.patch('/orders/:id', (req, res) => {
